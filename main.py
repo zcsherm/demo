@@ -156,7 +156,6 @@ class Poisson_distribution(Distribution):
             total += self.probability_mass_function(i)
         return total
 
-    def p
     
     def find_percentile(self, percentile):
         # Find the bounds of the range by finding k such that the 2^k < n < 2^(k+1)
@@ -277,7 +276,12 @@ class Function_probability:
             self._function_string=function_string
         self.read_function()
         self._lower_bound = lower_bound
-
+        self._upper_bound = upper_bound
+        self.get_cdf_function
+        self._expected_value = self.get_expected_value()
+        self._variance = self.get_variance()
+        self.get_standard_attributes()
+        
     def get_function(self,function_string=None):
         # Get the function written as a string, e = e, p = pi, xyz can be variables
         if function_string is None:
@@ -322,6 +326,28 @@ class Function_probability:
 
     def probability_greater_than_x(self,x,lower_bound=self._lower_bound):
         return 1-probability_of_at_least_x(x,lower_bound)
+
+    def get_expected_value(self, exponent=1):
+        x,y,x = symbols("x y z")
+        new_function = "(x**"+string(exponent)+")*(" + self._integratable_string + ")"
+        mu = integrate(new_function, (x,self._lower_bound,self._upper_bound))
+        if not isinstance(mu,float):
+            print("integration failed")
+            return None
+        return mu
+
+    def get_variance(self):
+        return self.get_expected_value(2) - self._expected_value
+
+    def get_percentile(self,percentile,lower_bound=self._lower_bound):
+        x, y, z = symbols("x y z")
+        if percentile > 1:
+            percentile = percentile / 100
+        lower_val = self._indef_integral.subs(x,0)
+        # Find the x value for which the integrated function equals the percentile
+        new_equation = (self._indef_integral.doit()-lower_val) - percentile # Does thisoverwrite indef_integral?
+        value = solve(new_equation,x)
+        return value
         
     def validate_function(self):
         parentheses = 0
@@ -453,6 +479,18 @@ class Function_probability:
         return stack[0]
 
 
+class Gamma_distribution(Distribution):
+
+    def __init__(self,alpha,beta):
+        self._alpha = alpha
+        self._beta = beta
+        self._gamma = gamma_function(self._alpha)
+        self._expected_value = alpha * beta
+        self._variance = alpha * beta**2
+
+    def probability_density_function(self,x):
+        value = 1/(self._beta**alpha*self._gamma)*x**(self._alpha-1)*exp(-x/self._beta)
+
 def factorial(num):
     # Ensure that the passed value is an integer
     if not isinstance(num, int):
@@ -483,7 +521,18 @@ def choose(total_options, number_chosen):
     choose_memos[(total_options, number_chosen)] = numerator / denominator
     return numerator / denominator
 
+def gamma_function(num):
+    if num < 0:
+        print("Gamma failed")
+        return
+    if isinstance(num,int):
+        return factorial(num-1)
+    else:
+        val = integrate(x^(num-1)exp(-x),(x,0,oo))
+        return val
+
 # map string values to the classses for each distro
 distributions = {"binomial": Binomial_distribution,
                  "poisson": Poisson_distribution
                  }
+
