@@ -9,7 +9,7 @@
 
 
 from math import exp, pi
-from sympy import integrate
+from sympy import integrate, symbols, doit, subs, oo
 
 
 # map distrobutions to reps for their binomial function (change to LaTex or images?
@@ -84,6 +84,18 @@ class Binomial_distribution(Distribution):
             total += self.probability_mass_function(i)
         return total
 
+    def probability_of_at_least_x(self,x):
+        return self.cumulative_mass_function(x)
+
+    def probability_greater_than_x(self,x):
+        return 1-self.cumulative_mass_function(x)
+
+    def probability_greater_than_equal_to_x(self,x):
+        return 1-self.cumulative_mass_function(x-1)
+
+    def probability_less_than_x(self,x):
+        return 1-self.cumulative_mass_function(x-1)
+        
     def find_percentile(self, percentile):
         # find the number of successes that represents the percentile of the whole distro
         # use a binary search, return the first success that is >= requested percentile
@@ -119,7 +131,19 @@ class Poisson_distribution(Distribution):
         self._probability_mass_function = pmf_descriptions["Poisson"]
 
         self.get_standard_attributes()
+        
+    def probability_of_at_least_x(self,x):
+        return self.cumulative_mass_function(x)
 
+    def probability_greater_than_x(self,x):
+        return 1-self.cumulative_mass_function(x)
+
+    def probability_greater_than_equal_to_x(self,x):
+        return 1-self.cumulative_mass_function(x-1)
+
+    def probability_less_than_x(self,x):
+        return 1-self.cumulative_mass_function(x-1)
+    
     def probability_mass_function(self, occurences):
         numerator = self._lambda ** occurences * exp(-self._lambda)
         denominator = factorial(occurences)
@@ -131,6 +155,8 @@ class Poisson_distribution(Distribution):
             total += self.probability_mass_function(i)
         return total
 
+    def p
+    
     def find_percentile(self, percentile):
         # Find the bounds of the range by finding k such that the 2^k < n < 2^(k+1)
         start = 1
@@ -162,12 +188,13 @@ class Poisson_distribution(Distribution):
 
 class Function_probability:
     # Represents when the probability is a function
-    def __init__(self,function_string=None):
+    def __init__(self,function_string=None,lower_bound=0,upper_bound=oo):
         if function_string is None:
             self.get_function()
         else:
             self._function_string=function_string
         self.read_function()
+        self._lower_bound = lower_bound
 
     def get_function(self,function_string=None):
         # Get the function written as a string, e = e, p = pi, xyz can be variables
@@ -180,13 +207,45 @@ class Function_probability:
             self._function_string = function_string
 
 
+    def get_cdf_function(self):
+        # Get the indefinite integral
+        # Currently, it only treats x as the variable of integration
+        x, y, z = symbols("x y z")
+        integratable_string = ""
+        integratable_string = self._function_string.replace("^","**")
+        integratable_string = self._function_string.replace('e',"exp(1)")
+        integratable_string = self._function_string.replace('p',"pi")
+        self._integratable_string = integratable_string
+        self._indef_integral = integrate(integratable_string,x)
+    
     def probability_mass_function(self, *args):
         # Integration
+        # Potentially run a limit as it approaches the passed arg?
         pass
 
+    def cumulative_density_function(self,lower_bound=self._lower_bound,upper_bound=self._upper_bound,*args,**kwargs):
+        x, y, z = symbols("x y z")
+        upper_integral = self._indef_integral.subs(x, upper_bound)
+        lower_integral = self._indef_integral.subs(x, lower_bound)
+        return upper_integral - lower_integral
+
+    def probability_of_x_from_a_to_b(self,a,b,lower_bound=self._lower_bound):
+        integral_of_a = self.cumulative_density_function(lower_bound,a)
+        integral_of_b = self.cumulative_density_function(lower_bound,b)
+        # We could return all of this as a tuple if we want the intermediate values too
+        return integral_of_b - integral_of_a
+
+    def probability_of_at_least_x(self,x,lower_bound=self._lower_bound):
+        return self.cumulative_density_function(lower_bound,x)
+
+    def probability_greater_than_x(self,x,lower_bound=self._lower_bound):
+        return 1-probability_of_at_least_x(x,lower_bound)
+        
     def validate_function(self):
         parentheses = 0
         previous_character = None
+        self._variables = None
+        variables = set()
         for char in self._function_string:
             if char not in "0123456789()+-/*^epxyz":
                 return False
@@ -207,6 +266,9 @@ class Function_probability:
                 if previous_character in 'ep':
                     print("numeric adjacent to e or p, need an operator")
                     return False
+                if char in 'xyz':
+                    # Find how many variables there are
+                    variables.add(char)
             previous_character = char
             # Check for parenthis closing, no dangling operators, no paird operators, no e2 etc
         if parentheses != 0:
@@ -215,6 +277,7 @@ class Function_probability:
         if self._function_string[0] in '+-/^*' or self._function_string[-1] in '+-/^*':
             print("Function started or ended with an operator")
             return False
+        self._variables = variables
         return True
 
     def read_function(self):
