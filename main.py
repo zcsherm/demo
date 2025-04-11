@@ -9,7 +9,7 @@
 
 
 from math import exp, pi
-from sympy import integrate
+#from sympy import integrate
 
 
 # map distrobutions to reps for their binomial function (change to LaTex or images?
