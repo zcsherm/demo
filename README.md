@@ -18,7 +18,7 @@
   - Add model for discrete, non-formulaic, probability tables
   - Add model for set theory probabilities (P(A),P(B),P(B or A),P(A|B), etc)
   - Add the following models:
-  - - Uniform distribution
+    - Uniform distribution
     - Gamma distribution
     - Chi squared
     - Exponential distribution
