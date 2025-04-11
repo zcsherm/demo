@@ -10,6 +10,7 @@
 
 from math import exp, pi
 from sympy import integrate, symbols, doit, subs, oo
+from fraction import Fraction
 
 
 # map distrobutions to reps for their binomial function (change to LaTex or images?
@@ -186,6 +187,87 @@ class Poisson_distribution(Distribution):
         return current_closest
 
 
+class Distribution_table(distribution):
+    # Models discrete probabilities where the probability at each payout is an integer x representing x/(sum(xi) chance of occurence
+    def __init__(self,probabilities=None):
+        if probabilities is None:
+            self.get_probabilities()
+        else:
+            self._probabilities = probabilities
+        self.find_sample_space_size()
+        self._variability = self.get_variance()
+        self._expected_value = self.get_expected_value()
+        self._standard_deviation = self.get_standard_deviation()
+    
+    def get_probabilities(self):
+        self._probabilities = {}
+        key = None
+        value = None
+        print("We're going to build the probabilities for discrete events. I'm going to ask for first the payout or event, and then the probability. press 'q' to indicate you are finished")
+        while key != 'q':
+            while key is None:
+                key=input("What is the event (payout)?: ")
+                if key == 'q':
+                    break
+                try:
+                    key=float(key)
+                except ValueError:
+                    key = None
+                    print("Please enter a number.")
+            while value is None:
+                value = input(f"What is the probability of {key}? Must be an integer representing proportion of sample space.")
+                try:
+                    value=int(value)
+                    if value < 0:
+                        value = None
+                        print("Your probability was smaller than 1, try again")
+                except ValueError:
+                    value = None
+                    print("Your decimal was invalid")
+                self.add_outcome(key,value)
+
+    def add_outcome(self,event,value):
+        try:
+            self._probabilities[event] += value
+        except KeyError:
+            self._probabilities[event] = value
+
+    def find_sample_space_size(self):
+        number_of_distinct_events = 0
+        number_of_possibilities = 0
+        for key in list(self._probabilities.keys()):
+            number_of_distinct_events += 1
+            number_of_possibilities += self._probabilities[key]
+        self._distinct_events = number_of_distinct_events
+        self._sample_space_size = number
+
+    def probability_mass_function(self,event):
+        try:
+            return self._probabilities[event]/self._sample_space_size
+        except KeyError:
+            return 0
+
+    def get_expected_value(self, exponent = 1):
+        total = 0
+        for key in list(self._probabilities.keys()):
+            total += (key**exponent)*self.probability_mass_function(key)
+        return total
+
+    def get_variance(self):
+        # E(x^2)- E(x)^2
+        e_x_squared = get_expected_value(exponent=2)
+        e_squared = self._expected_value ** 2
+        return e_x_squared - e_squared
+
+    def get_standard_deviation(self):
+        return self._variance ** .5
+
+    def linear_combination(self,a,b):
+        lc_expected = a* self._expected_value + b
+        lc_variance = a**2 * self._variance
+        print(f"The expected value of the linear combination W={a}X+{b} is: {lc_expected}")
+        print(f"The variance of the linear combination w={a}X+{b} is: {lc+variance}")
+        
 class Function_probability:
     # Represents when the probability is a function
     def __init__(self,function_string=None,lower_bound=0,upper_bound=oo):
