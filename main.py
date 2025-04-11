@@ -9,7 +9,7 @@
 
 
 from math import exp, pi
-#from sympy import integrate
+from sympy import integrate
 
 
 # map distrobutions to reps for their binomial function (change to LaTex or images?
@@ -28,7 +28,8 @@ infix_precedence = {'+': 1,
                     '-': 1,
                     '*': 2,
                     '/': 2,
-                    '^': 3}
+                    '^': 3,
+                    '(':0}
 
 
 
@@ -74,8 +75,8 @@ class Binomial_distribution(Distribution):
         self.get_standard_attributes()  # Get common distribution elements from parent
 
     def probability_mass_function(self, successes):
-        return choose(self._trials, successes) * (self._probabilty ** successes) * (
-                    (1 - self._probability) ** self._trials - successes)
+        return choose(self._trials, successes) * (self._probability ** successes) * (
+                    (1 - self._probability) ** (self._trials - successes))
 
     def cumulative_mass_function(self, successes):
         total = 0
@@ -96,11 +97,11 @@ class Binomial_distribution(Distribution):
                 return index, prob_of_index
             if prob_of_index < percentile / 100:
                 start = index
-                index = ((end - index) // 2) + start
+                index = max(((end - index) // 2),1) + start
             else:
                 current_closest = index, prob_of_index
                 end = index
-                index = ((end - index) // 2) + start
+                index = max(((end - index) // 2),1) + start
         return current_closest
 
 
@@ -148,27 +149,36 @@ class Poisson_distribution(Distribution):
             if prob_of_index == percentile / 100:
                 return index, prob_of_index
             if prob_of_index < percentile / 100:
-                start = index
-                index = ((end - index) // 2) + start
+                floor = index
+                index = max(((end - index) // 2),1) + floor
             else:
                 current_closest = index, prob_of_index
                 end = index
-                index = ((end - index) // 2) + start
+                index = max(((end - index) // 2),1) + floor
+            if index == end:
+                break
         return current_closest
 
 
 class Function_probability:
     # Represents when the probability is a function
-    def __init__(self):
-        self.get_function()
-
-    def get_function(self):
-        # Get the function written as a string, e = e, p = pi, xyz can be variables
-        self._function_string = input("Please enter a function using 0-9,()+-/*^,e,p,xyz: ").strip()
-        while not self.validate_function():
-            self._function_string = input(
-                "The function you entered had an invalid character, please enter a function using 0-9,()+-/*^,e,p,xyz: ").strip()
+    def __init__(self,function_string=None):
+        if function_string is None:
+            self.get_function()
+        else:
+            self._function_string=function_string
         self.read_function()
+
+    def get_function(self,function_string=None):
+        # Get the function written as a string, e = e, p = pi, xyz can be variables
+        if function_string is None:
+            self._function_string = input("Please enter a function using 0-9,()+-/*^,e,p,xyz: ").strip()
+            while not self.validate_function():
+                self._function_string = input(
+                    "The function you entered had an invalid character, please enter a function using 0-9,()+-/*^,e,p,xyz: ").strip()
+        else:
+            self._function_string = function_string
+
 
     def probability_mass_function(self, *args):
         # Integration
@@ -212,12 +222,14 @@ class Function_probability:
         # Ex. 1+3*4-(3*5)+2^6-1 -> 134*+35*-26^+1-
         operator_stack = []
         output_stack = []
-        current_number = 0
+        current_number = None
         for char in self._function_string:
             # Read the string
             try:
                 # If the characer is a numeric, add it to 10* current total
                 digit = int(char)
+                if current_number is None:
+                    current_number = 0
                 current_number = current_number * 10 + digit
             except ValueError:
                 # If the char is non-numeric, check if the character is a variable
@@ -226,8 +238,9 @@ class Function_probability:
 
                 else:
                     # If the char is a symbol, then output our current number total
-                    output_stack.append(current_number)
-                    current_number = 0
+                    if current_number is not None:
+                        output_stack.append(current_number)
+                        current_number = None
                     if len(operator_stack) == 0:
                         operator_stack.append(char)
                     else:
@@ -249,7 +262,8 @@ class Function_probability:
                             operator_stack.append(char)
 
         # Output the final read number
-        output_stack.append(current_number)
+        if current_number is not None:
+            output_stack.append(current_number)
         # empty the operator stack
         while len(operator_stack) > 0:
             output_stack.append(operator_stack.pop())
@@ -271,11 +285,11 @@ class Function_probability:
                     if second_operand == 'e':
                         second_operand = exp(1)
                     elif second_operand == 'p':
-                        second_operand = pi()
+                        second_operand = pi
                     if first_operand == 'e':
                         first_operand = exp(1)
                     elif first_operand == 'p':
-                        first_operand = pi()
+                        first_operand = pi
 
                     # switch case for operator
                     if value == '+':
@@ -316,12 +330,12 @@ def factorial(num):
 
 
 def choose(total_options, number_chosen):
-    if [total_options, number_chosen] in choose_memos:
-        return choose_memos[[total_options, number_chosen]]
+    if (total_options, number_chosen) in choose_memos:
+        return choose_memos[(total_options, number_chosen)]
     numerator = factorial(total_options)
     # Denom is more efficitent when passign the smallest
     denominator = factorial(number_chosen) * factorial(total_options - number_chosen)
-    choose_memos[[total_options, number_chosen]] = numerator / denominator
+    choose_memos[(total_options, number_chosen)] = numerator / denominator
     return numerator / denominator
 
 # map string values to the classses for each distro
