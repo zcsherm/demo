@@ -1,5 +1,6 @@
 import unittest
-from main import *
+from discrete_models import *
+from continuous_models import *
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
@@ -18,10 +19,15 @@ class MyTestCase(unittest.TestCase):
         print(bd.find_percentile(90))
 
     def test_poisson(self):
+        print(f"\n\n{__name__}sdjfdh\n")
         pd = Poisson_distribution(8)
         print(pd.probability_mass_function(6))
         print(pd.cumulative_mass_function(6))
         print(pd.find_percentile(32))
+        print(pd.probability_less_than_x(6))
+        print(pd.probability_greater_than_x(6))
+        print(pd.probability_greater_than_equal_to_x(6))
+        print("================================================================")
 
     def test_function_distro(self):
         print("\n\n test_function_distro: \n")

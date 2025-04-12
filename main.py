@@ -98,7 +98,7 @@ class Binomial_distribution(Distribution):
 
     def probability_less_than_x(self,x):
         return 1-self.cumulative_mass_function(x-1)
-        
+
     def find_percentile(self, percentile):
         # find the number of successes that represents the percentile of the whole distro
         # use a binary search, return the first success that is >= requested percentile
@@ -134,7 +134,7 @@ class Poisson_distribution(Distribution):
         self._probability_mass_function = pmf_descriptions["Poisson"]
 
         self.get_standard_attributes()
-        
+
     def probability_of_at_least_x(self,x):
         return self.cumulative_mass_function(x)
 
@@ -145,8 +145,8 @@ class Poisson_distribution(Distribution):
         return 1-self.cumulative_mass_function(x-1)
 
     def probability_less_than_x(self,x):
-        return 1-self.cumulative_mass_function(x-1)
-    
+        return self.cumulative_mass_function(x-1)
+
     def probability_mass_function(self, occurences):
         numerator = self._lambda ** occurences * exp(-self._lambda)
         denominator = factorial(occurences)
@@ -158,7 +158,7 @@ class Poisson_distribution(Distribution):
             total += self.probability_mass_function(i)
         return total
 
-    
+
     def find_percentile(self, percentile):
         # Find the bounds of the range by finding k such that the 2^k < n < 2^(k+1)
         start = 1
@@ -199,7 +199,7 @@ class Distribution_table(Distribution):
         self._variability = self.get_variance()
         self._expected_value = self.get_expected_value()
         self._standard_deviation = self.get_standard_deviation()
-    
+
     def get_probabilities(self):
         self._probabilities = {}
         key = None
@@ -271,7 +271,7 @@ class Distribution_table(Distribution):
         lc_variance = a**2 * self._variance
         print(f"The expected value of the linear combination W={a}X+{b} is: {lc_expected}")
         print(f"The variance of the linear combination w={a}X+{b} is: {lc_variance}")
-        
+
 class Function_probability:
     # Represents when the probability is a function
     def __init__(self,function_string=None,lower_bound=0,upper_bound=oo):
@@ -286,7 +286,7 @@ class Function_probability:
         self._expected_value = self.get_expected_value()
         self._variance = self.get_variance()
         #self.get_standard_attributes()
-        
+
     def get_function(self,function_string=None):
         # Get the function written as a string, e = e, p = pi, xyz can be variables
         if function_string is None:
@@ -308,7 +308,7 @@ class Function_probability:
         integratable_string = integratable_string.replace('e',"exp(1)")
         self._integratable_string = integratable_string
         self._indef_integral = integrate(integratable_string,x)
-    
+
     def probability_mass_function(self, *args):
         # Integration
         # Potentially run a limit as it approaches the passed arg?
@@ -370,7 +370,7 @@ class Function_probability:
                 return_value = num
                 break
         return return_value
-        
+
     def validate_function(self):
         parentheses = 0
         previous_character = None
