@@ -10,12 +10,12 @@
 
 # To-do
   - Add GUI elements that interact with underlying models
-  - Add cdf for arbitrary continuous functions using sympy.integrate -> potentially develop own integrate function?
+  - ~~Add cdf for arbitrary continuous functions using sympy.integrate~~ -> potentially develop own integrate function?
   - Add methods for variance and expected value of continuous variables
   - Add method that plots a given function
   - Add method that colors in plots based on passed cdf values
   - Add help features
-  - Add model for discrete, non-formulaic, probability tables
+  - ~~Add model for discrete, non-formulaic, probability tables~~
   - Add model for set theory probabilities (P(A),P(B),P(B or A),P(A|B), etc)
   - Add the following models:
     - Uniform distribution
