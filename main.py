@@ -9,7 +9,7 @@
 
 
 from math import exp, pi
-from sympy import integrate, symbols, oo
+from sympy import integrate, symbols, oo, evalf
 from sympy.solvers import solveset
 #from sympy.core import subs
 from fraction import Fraction
@@ -282,10 +282,10 @@ class Function_probability:
         self.read_function()
         self._lower_bound = lower_bound
         self._upper_bound = upper_bound
-        self.get_cdf_function
+        self.get_cdf_function()
         self._expected_value = self.get_expected_value()
         self._variance = self.get_variance()
-        self.get_standard_attributes()
+        #self.get_standard_attributes()
         
     def get_function(self,function_string=None):
         # Get the function written as a string, e = e, p = pi, xyz can be variables
@@ -304,8 +304,8 @@ class Function_probability:
         x, y, z = symbols("x y z")
         integratable_string = ""
         integratable_string = self._function_string.replace("^","**")
-        integratable_string = self._function_string.replace('e',"exp(1)")
-        integratable_string = self._function_string.replace('p',"pi")
+        integratable_string = integratable_string.replace('p', "pi")
+        integratable_string = integratable_string.replace('e',"exp(1)")
         self._integratable_string = integratable_string
         self._indef_integral = integrate(integratable_string,x)
     
@@ -315,15 +315,15 @@ class Function_probability:
         pass
 
     def cumulative_density_function(self,lower_bound=None,upper_bound=None,*args,**kwargs):
-        lower_bound=(lower_bound,self._lower_bound)
-        upper_bound=(upper_bound,self._upper_bound)
+        lower_bound=set_default_value(lower_bound,self._lower_bound)
+        upper_bound=set_default_value(upper_bound,self._upper_bound)
         x, y, z = symbols("x y z")
         upper_integral = self._indef_integral.subs(x, upper_bound)
         lower_integral = self._indef_integral.subs(x, lower_bound)
         return upper_integral - lower_integral
 
     def probability_of_x_from_a_to_b(self,a,b,lower_bound=None):
-        lower_bound=(lower_bound,self._lower_bound)
+        lower_bound=set_default_value(lower_bound,self._lower_bound)
         integral_of_a = self.cumulative_density_function(lower_bound,a)
         integral_of_b = self.cumulative_density_function(lower_bound,b)
         # We could return all of this as a tuple if we want the intermediate values too
@@ -338,10 +338,16 @@ class Function_probability:
         return 1-self.probability_of_at_least_x(x,lower_bound)
 
     def get_expected_value(self, exponent=1):
-        x,y,x = symbols("x y z")
+        x,y,z = symbols("x y z")
         new_function = "(x**"+str(exponent)+")*(" + self._integratable_string + ")"
         mu = integrate(new_function, (x,self._lower_bound,self._upper_bound))
+        try:
+            mu = float(mu)
+        except TypeError:
+            print(f"Here's the problem {mu}")
+            mu = float(mu.evalf())
         if not isinstance(mu,float):
+            print(mu)
             print("integration failed")
             return None
         return mu

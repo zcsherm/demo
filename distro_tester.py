@@ -54,5 +54,14 @@ class MyTestCase(unittest.TestCase):
                 self.assertAlmostEqual(fd_value,calcd_value)
                 print(f"Function {func} == {fd_value}")
 
+    def test_cdf_of_arb_function(self):
+        print("\n\nARBITRAY FUNCTION CDF TEST ----\n")
+        func_string = "2/25*x"
+        fd = Function_probability(func_string,0,5)
+        self.assertAlmostEqual(fd.read_postfix_function(4),8/25)
+        print(fd.get_expected_value())
+        print(fd.get_variance())
+        print(fd.probability_of_at_least_x(3))
+        print(fd.probability_of_x_from_a_to_b(2,4))
 if __name__ == '__main__':
     unittest.main()
