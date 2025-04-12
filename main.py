@@ -9,7 +9,9 @@
 
 
 from math import exp, pi
-from sympy import integrate, symbols, doit, subs, oo
+from sympy import integrate, symbols, oo
+from sympy.solvers import solveset
+#from sympy.core import subs
 from fraction import Fraction
 
 
@@ -186,7 +188,7 @@ class Poisson_distribution(Distribution):
         return current_closest
 
 
-class Distribution_table(distribution):
+class Distribution_table(Distribution):
     # Models discrete probabilities where the probability at each payout is an integer x representing x/(sum(xi) chance of occurence
     def __init__(self,probabilities=None):
         if probabilities is None:
@@ -238,7 +240,10 @@ class Distribution_table(distribution):
             number_of_distinct_events += 1
             number_of_possibilities += self._probabilities[key]
         self._distinct_events = number_of_distinct_events
-        self._sample_space_size = number
+        self._sample_space_size = number_of_possibilities
+        self._expected_value = self.get_expected_value()
+        self._variance = self.get_variance()
+
 
     def probability_mass_function(self,event):
         try:
@@ -254,7 +259,7 @@ class Distribution_table(distribution):
 
     def get_variance(self):
         # E(x^2)- E(x)^2
-        e_x_squared = get_expected_value(exponent=2)
+        e_x_squared = self.get_expected_value(exponent=2)
         e_squared = self._expected_value ** 2
         return e_x_squared - e_squared
 
@@ -265,7 +270,7 @@ class Distribution_table(distribution):
         lc_expected = a* self._expected_value + b
         lc_variance = a**2 * self._variance
         print(f"The expected value of the linear combination W={a}X+{b} is: {lc_expected}")
-        print(f"The variance of the linear combination w={a}X+{b} is: {lc+variance}")
+        print(f"The variance of the linear combination w={a}X+{b} is: {lc_variance}")
         
 class Function_probability:
     # Represents when the probability is a function
@@ -309,27 +314,32 @@ class Function_probability:
         # Potentially run a limit as it approaches the passed arg?
         pass
 
-    def cumulative_density_function(self,lower_bound=self._lower_bound,upper_bound=self._upper_bound,*args,**kwargs):
+    def cumulative_density_function(self,lower_bound=None,upper_bound=None,*args,**kwargs):
+        lower_bound=(lower_bound,self._lower_bound)
+        upper_bound=(upper_bound,self._upper_bound)
         x, y, z = symbols("x y z")
         upper_integral = self._indef_integral.subs(x, upper_bound)
         lower_integral = self._indef_integral.subs(x, lower_bound)
         return upper_integral - lower_integral
 
-    def probability_of_x_from_a_to_b(self,a,b,lower_bound=self._lower_bound):
+    def probability_of_x_from_a_to_b(self,a,b,lower_bound=None):
+        lower_bound=(lower_bound,self._lower_bound)
         integral_of_a = self.cumulative_density_function(lower_bound,a)
         integral_of_b = self.cumulative_density_function(lower_bound,b)
         # We could return all of this as a tuple if we want the intermediate values too
         return integral_of_b - integral_of_a
 
-    def probability_of_at_least_x(self,x,lower_bound=self._lower_bound):
+    def probability_of_at_least_x(self,x,lower_bound=None):
+        lower_bound=set_default_value(lower_bound,self._lower_bound)
         return self.cumulative_density_function(lower_bound,x)
 
-    def probability_greater_than_x(self,x,lower_bound=self._lower_bound):
-        return 1-probability_of_at_least_x(x,lower_bound)
+    def probability_greater_than_x(self,x,lower_bound=None):
+        lower_bound = set_default_value(lower_bound, self._lower_bound)
+        return 1-self.probability_of_at_least_x(x,lower_bound)
 
     def get_expected_value(self, exponent=1):
         x,y,x = symbols("x y z")
-        new_function = "(x**"+string(exponent)+")*(" + self._integratable_string + ")"
+        new_function = "(x**"+str(exponent)+")*(" + self._integratable_string + ")"
         mu = integrate(new_function, (x,self._lower_bound,self._upper_bound))
         if not isinstance(mu,float):
             print("integration failed")
@@ -339,14 +349,15 @@ class Function_probability:
     def get_variance(self):
         return self.get_expected_value(2) - self._expected_value
 
-    def get_percentile(self,percentile,lower_bound=self._lower_bound):
+    def get_percentile(self,percentile,lower_bound=None):
+        lower_bound = set_default_value(lower_bound, self._lower_bound)
         x, y, z = symbols("x y z")
         if percentile > 1:
             percentile = percentile / 100
         lower_val = self._indef_integral.subs(x,0)
         # Find the x value for which the integrated function equals the percentile
         new_equation = (self._indef_integral.doit()-lower_val) - percentile # Does thisoverwrite indef_integral?
-        value = solve(new_equation,x)
+        value = solveset(new_equation,x)
         return value
         
     def validate_function(self):
@@ -489,7 +500,7 @@ class Gamma_distribution(Distribution):
         self._variance = alpha * beta**2
 
     def probability_density_function(self,x):
-        value = 1/(self._beta**alpha*self._gamma)*x**(self._alpha-1)*exp(-x/self._beta)
+        value = 1/(self._beta**self._alpha*self._gamma)*x**(self._alpha-1)*exp(-x/self._beta)
 
 def factorial(num):
     # Ensure that the passed value is an integer
@@ -522,13 +533,14 @@ def choose(total_options, number_chosen):
     return numerator / denominator
 
 def gamma_function(num):
+    x = symbols('x')
     if num < 0:
         print("Gamma failed")
         return
     if isinstance(num,int):
         return factorial(num-1)
     else:
-        val = integrate(x^(num-1)exp(-x),(x,0,oo))
+        val = integrate(x^(num-1)*exp(-x),(x,0,oo))
         return val
 
 # map string values to the classses for each distro
@@ -536,3 +548,7 @@ distributions = {"binomial": Binomial_distribution,
                  "poisson": Poisson_distribution
                  }
 
+def set_default_value(parameter,argument):
+    if parameter is None:
+        return argument
+    return parameter
