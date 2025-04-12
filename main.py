@@ -485,6 +485,7 @@ class Function_probability:
                     elif value == '^':
                         result = first_operand ** second_operand
                     stack.append(result)
+
         if len(stack) != 1:
             print('I messed this up...')
         return stack[0]
