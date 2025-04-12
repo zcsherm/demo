@@ -320,14 +320,14 @@ class Function_probability:
         x, y, z = symbols("x y z")
         upper_integral = self._indef_integral.subs(x, upper_bound)
         lower_integral = self._indef_integral.subs(x, lower_bound)
-        return upper_integral - lower_integral
+        return float(upper_integral - lower_integral)
 
     def probability_of_x_from_a_to_b(self,a,b,lower_bound=None):
         lower_bound=set_default_value(lower_bound,self._lower_bound)
         integral_of_a = self.cumulative_density_function(lower_bound,a)
         integral_of_b = self.cumulative_density_function(lower_bound,b)
         # We could return all of this as a tuple if we want the intermediate values too
-        return integral_of_b - integral_of_a
+        return float(integral_of_b - integral_of_a)
 
     def probability_of_at_least_x(self,x,lower_bound=None):
         lower_bound=set_default_value(lower_bound,self._lower_bound)
@@ -353,10 +353,11 @@ class Function_probability:
         return mu
 
     def get_variance(self):
-        return self.get_expected_value(2) - self._expected_value
+        return self.get_expected_value(2) - self._expected_value**2
 
     def get_percentile(self,percentile,lower_bound=None):
         lower_bound = set_default_value(lower_bound, self._lower_bound)
+        return_value = None
         x, y, z = symbols("x y z")
         if percentile > 1:
             percentile = percentile / 100
@@ -364,7 +365,11 @@ class Function_probability:
         # Find the x value for which the integrated function equals the percentile
         new_equation = (self._indef_integral.doit()-lower_val) - percentile # Does thisoverwrite indef_integral?
         value = solveset(new_equation,x)
-        return value
+        for num in value:
+            if num > lower_bound and num < self._upper_bound:
+                return_value = num
+                break
+        return return_value
         
     def validate_function(self):
         parentheses = 0
@@ -508,6 +513,7 @@ class Gamma_distribution(Distribution):
 
     def probability_density_function(self,x):
         value = 1/(self._beta**self._alpha*self._gamma)*x**(self._alpha-1)*exp(-x/self._beta)
+        return value
 
 def factorial(num):
     # Ensure that the passed value is an integer

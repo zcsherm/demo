@@ -24,6 +24,7 @@ class MyTestCase(unittest.TestCase):
         print(pd.find_percentile(32))
 
     def test_function_distro(self):
+        print("\n\n test_function_distro: \n")
         test_funcs = {"1+2-3*(6-10)/5":1+2-3*(6-10)/5,
                       "134/43+14^2-1":134/43+14**2-1,
                       "e+3-2*0":exp(1)+3-2*0,
@@ -53,7 +54,7 @@ class MyTestCase(unittest.TestCase):
                 calcd_value = test_vari_funcs[func](i)
                 self.assertAlmostEqual(fd_value,calcd_value)
                 print(f"Function {func} == {fd_value}")
-
+        print("=============================================================================")
     def test_cdf_of_arb_function(self):
         print("\n\nARBITRAY FUNCTION CDF TEST ----\n")
         func_string = "2/25*x"
@@ -61,7 +62,25 @@ class MyTestCase(unittest.TestCase):
         self.assertAlmostEqual(fd.read_postfix_function(4),8/25)
         print(fd.get_expected_value())
         print(fd.get_variance())
-        print(fd.probability_of_at_least_x(3))
-        print(fd.probability_of_x_from_a_to_b(2,4))
+        print(fd.probability_of_at_least_x(2))
+        print(fd.probability_of_x_from_a_to_b(1.5,2))
+        print(fd.get_percentile(36))
+        print(fd.get_percentile(50))
+        print("==============================================================================")
+
+    def test_distribution_table(self):
+        print("\n\n test_distribution_table\n")
+        odds = {0:8,1:27,2:34,3:19,4:9,5:3}
+        dt = Distribution_table(odds)
+        print(dt.get_expected_value())
+        print(dt.get_variance())
+        dt.linear_combination(8,0)
+
+        print("=============================================================================")
+    def test_gamma_distro(self):
+        print("\n\ntest_gamma_distribution\n")
+        gt = Gamma_distribution(3,5)
+        print(gt.probability_density_function(3))
+        print("=============================================================================")
 if __name__ == '__main__':
     unittest.main()
