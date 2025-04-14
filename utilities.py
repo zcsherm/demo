@@ -1,5 +1,5 @@
 from math import exp, pi
-from sympy import integrate, symbols, oo
+from sympy import integrate, symbols, oo, sympify, exp
 from sympy.solvers import solveset
 
 
@@ -60,10 +60,27 @@ def gamma_function(num):
     if isinstance(num,int):
         return factorial(num-1)
     else:
-        val = integrate(x^(num-1)*exp(-x),(x,0,oo))
+        expr = x**(num)*exp(-x)
+        val = integrate(expr,(x,0,oo))
         return val
 
-
+def incomplete_gamma_function(s,x,iterations=500):
+    """
+    Simulates the lower incomplete gamma via reimann summation of the function t^(s-1)e^-t
+    :param s:
+    :param x:
+    :param iterations:
+    :return:
+    """
+    margin_of_convergence = 1 * 10**(-8)
+    sum = 0
+    for i in range(1,iterations):
+        t = (i+.5)/iterations * x
+        term = exp(-t)*t**(s-1)
+        sum += term * x/(iterations)
+        if term < margin_of_convergence:
+            break
+    return sum
 def set_default_value(parameter,argument):
     if parameter is None:
         return argument

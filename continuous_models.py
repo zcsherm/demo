@@ -149,6 +149,7 @@ class Gamma_distribution(Distribution):
     def __init__(self, alpha, beta):
         self._alpha = alpha
         self._beta = beta
+        self._rate = 1/beta
         self._gamma = gamma_function(self._alpha)
         self._expected_value = alpha * beta
         self._variance = alpha * beta ** 2
@@ -156,3 +157,27 @@ class Gamma_distribution(Distribution):
     def probability_density_function(self, x):
         value = 1 / (self._beta ** self._alpha * self._gamma) * x ** (self._alpha - 1) * exp(-x / self._beta)
         return value
+
+    def cumulative_density_function(self,x):
+        return incomplete_gamma_function(self._alpha,self._rate*x) / self._gamma
+
+    def get_expected_value(self):
+        return self._alpha * self._beta
+
+    def get_variance(self):
+        return self._alpha * self._beta **2
+
+    def probability_of_x_from_a_to_b(self, a, b):
+        return self.cumulative_density_function(b)-self.cumulative_density_function(a)
+
+    def probability_of_at_least_x(self, x):
+        return self.cumulative_density_function(x)
+
+    def probability_greater_than_x(self, x):
+        return 1 - self.probability_of_at_least_x(x)
+
+class Chi_Squared(Gamma_distribution):
+
+    def __init__(self,v):
+        super().__init__(v/2,2)
+        self._v = v

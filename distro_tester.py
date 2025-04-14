@@ -85,8 +85,16 @@ class MyTestCase(unittest.TestCase):
         print("=============================================================================")
     def test_gamma_distro(self):
         print("\n\ntest_gamma_distribution\n")
-        gt = Gamma_distribution(3,5)
+        gt = Gamma_distribution(1/2,4)
         print(gt.probability_density_function(3))
+        print(gt.cumulative_density_function(6))
         print("=============================================================================")
+
+    def test_chi_squared(self):
+        print("\n\n test Chi wuared")
+        cs = Chi_Squared(4)
+        print(cs.get_expected_value())
+        print(cs.get_variance())
+        print("==============================================================================")
 if __name__ == '__main__':
     unittest.main()
