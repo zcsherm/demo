@@ -28,6 +28,9 @@ class Sample:
 
     def get_count(self):
         return self._count
+
+    def get_measurement(self,index):
+        return self._samples[index]
         
 class ProportionSample(Sample):
     def __init__(self,data_set,labels=None,positive_case=None):
