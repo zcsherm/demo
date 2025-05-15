@@ -26,7 +26,9 @@ class Sample:
             label = len(self._labels)
         self._label.append(label)
 
-
+    def get_count(self):
+        return self._count
+        
 class ProportionSample(Sample):
     def __init__(self,data_set,labels=None,positive_case=None):
         super().__init__(data_set,labels)
