@@ -27,3 +27,10 @@
   - Add Z-tables
   - Add images for functions or LaTex for functions?
   - Add descriptions of each variable and examples
+  - ~~Add ability to create samples~~
+  - ~~Add Z and T testing sample sets and general functions, both for proportion and quantitative variables~~
+  - ~~Add confidence interval functions for samples~~
+  - Add experiments with multiple samples
+  - Add ability to perform ANOVA, matched T, 2 t test analysis
+  - Add Linear Regression model
+  - Add t testing for LR model (slope and intercept)
