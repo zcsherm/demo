@@ -47,7 +47,10 @@ class Sample:
         Returns the (n-1)th data point
         """
         return self._samples[index]
-        
+
+    def get_standard_deviation(self):
+        return self._std_dev
+    
 class ProportionSample(Sample):
     """
     Represents a sample that measures membership in a boolean measurement. Supports proportional calculations.
