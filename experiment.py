@@ -1,4 +1,5 @@
 from sample import *
+from model import *
 import scipy.stats as st
 class experiment:
     # Represents a set of treatments and responses for an experiment. Can perform multi t and anova analysis
